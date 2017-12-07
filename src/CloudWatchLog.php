@@ -12,6 +12,14 @@ class CloudWatchLog extends MonologLog
 {
     public function __construct($logLevel, $groupName, $streamName, $retentionPeriodInDays = 14)
     {
+        if (preg_match("/\s/", $groupName)){
+            throw new \InvalidArgumentException('Spaces not allowed in $groupName');
+        }
+
+        if (preg_match("/\s/", $streamName)){
+            throw new \InvalidArgumentException('Spaces not allowed in $streamName');
+        }
+
         $aws = AwsSettings::singleton();
 
         $awsCredentials = $aws->getClientSettings([]);
@@ -19,7 +27,7 @@ class CloudWatchLog extends MonologLog
         $cwClient = new CloudWatchLogsClient($awsCredentials);
         $logger = new Logger('PHP Logging');
 
-        $cwHandlerInstanceLog = new CloudWatch($cwClient, $groupName, $streamName, $retentionPeriodInDays, 10000, null,Logger::NOTICE);
+        $cwHandlerInstanceLog = new CloudWatch($cwClient, $groupName, $streamName, $retentionPeriodInDays, 10000, [],Logger::NOTICE);
         $logger->pushHandler($cwHandlerInstanceLog);
 
         parent::__construct($logLevel, $logger);
